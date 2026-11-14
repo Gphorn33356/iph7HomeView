@@ -71,6 +71,692 @@
         }
 
         .cal-header .weekday-month .cn-date {
+            font-size: 24px;
+            font-weight: 700;
+            color: #86efac;
+            line-height: 1.1;
+        }
+
+        .cal-header .weekday-month .en-date {
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 1px;
+        }
+
+        .cal-header .day-number {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1;
+            color: #ffffff;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            text-align: center;
+            margin-top: 3px;
+        }
+
+        .cal-grid .wk-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 1px;
+        }
+
+        .wk-header .cn {
+            font-size: 11px;
+            font-weight: 700;
+            color: #86efac;
+            line-height: 1;
+        }
+
+        .wk-header .en {
+            font-size: 7px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+        }
+
+        .cal-grid .wk-header.sunday .cn {
+            color: #f87171;
+        }
+
+        .day-cell {
+            padding: 1px 0;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 26px;
+        }
+
+        .day-cell .num {
+            font-size: 11px;
+            font-weight: 500;
+            color: #e2e8f0;
+            line-height: 1;
+        }
+
+        .day-cell .holiday-tag {
+            font-size: 7px;
+            color: #f87171;
+            font-weight: 700;
+            margin-top: 1px;
+            transform: scale(0.85);
+            white-space: nowrap;
+        }
+
+        .day-cell.sunday .num, .day-cell.holiday-cell .num {
+            color: #f87171;
+            font-weight: 700;
+        }
+
+        .day-cell.today {
+            background-color: #ffffff;
+        }
+
+        .day-cell.today .num {
+            color: #17211b;
+            font-weight: 700;
+        }
+
+        .day-cell.dim {
+            opacity: 0.35;
+        }
+
+        /* 巨型數位時鐘卡片 */
+        .clock-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 14px;
+            text-align: center;
+        }
+
+        .time-12hr {
+            font-size: 56px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .time-12hr span {
+            font-size: 36px;
+            font-weight: 600;
+            color: #86efac;
+            margin-left: 4px;
+        }
+
+        .time-24hr {
+            font-size: 48px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.75);
+            margin-top: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        /* 即時天氣卡片 */
+        .weather-card {
+            justify-content: space-between;
+        }
+
+        .weather-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .location-select {
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 2px 4px;
+            outline: none;
+        }
+
+        .location-select option {
+            background: #17211b;
+            color: #ffffff;
+        }
+
+        .sync-btn {
+            background: rgba(134, 239, 172, 0.2);
+            border: 1px solid rgba(134, 239, 172, 0.4);
+            color: #86efac;
+            font-size: 14px;
+            padding: 2px 6px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .weather-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 4px;
+        }
+
+        .temp-display {
+            font-size: 48px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .today-high-low {
+            font-size: 18px;
+            color: #ffffff;
+            margin-top: 3px;
+            font-weight: 600;
+        }
+
+        .weather-details-right {
+            text-align: right;
+        }
+
+        .condition {
+            font-size: 12px;
+            font-weight: 600;
+            color: #86efac;
+        }
+
+        .details {
+            font-size: 18px;
+            font-weight: 700;
+            color: #86efac;
+            margin-top: 2px;
+        }
+
+        /* 九天天氣預報卡片 */
+        .forecast-card {
+            flex-grow: 1;
+        }
+
+        .forecast-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #86efac;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .forecast-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto;
+            max-height: 120px;
+            padding-right: 2px;
+        }
+
+        .forecast-list::-webkit-scrollbar {
+            width: 3px;
+        }
+        .forecast-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        /* 預報行調整：支援不換行與靠左對齊 */
+        .forecast-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 7px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .f-day { 
+            width: 85px; 
+            color: #e2e8f0; 
+            font-weight: 500; 
+            white-space: nowrap; 
+        }
+
+        .f-cond { 
+            flex-grow: 1; 
+            text-align: left; 
+            color: rgba(255, 255, 255, 0.9); 
+            padding: 0 10px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+        }
+
+        .f-temp { 
+            font-weight: 700; 
+            color: #ffffff; 
+            width: 75px; 
+            text-align: right; 
+            white-space: nowrap; 
+        }
+
+
+        /* ================= 橫向模式 (Landscape - iPhone 7 橫向 667x375) ================= */
+        @media screen and (orientation: landscape) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: 1fr 1fr;
+                gap: 8px;
+                padding: 6px;
+                max-width: 100vw;
+                max-height: 100vh;
+            }
+
+            .calendar-card {
+                grid-column: 1 / 2;
+                grid-row: 1 / 2;
+            }
+
+            .clock-card {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
+                padding: 10px;
+            }
+
+            .time-12hr {
+                font-size: 56px;
+            }
+
+            .time-24hr {
+                font-size: 48px;
+            }
+
+            .weather-card {
+                grid-column: 2 / 3;
+                grid-row: 1 / 2;
+            }
+
+            .forecast-card {
+                grid-column: 2 / 3;
+                grid-row: 2 / 3;
+            }
+
+            .forecast-list {
+                max-height: 110px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <!-- 1. 左上：日曆卡片 -->
+        <div class="glass-card calendar-card">
+            <div class="cal-header">
+                <div class="weekday-month">
+                    <span class="cn-date" id="calCnDate">YYYY年MM月DD日</span>
+                    <span class="en-date" id="calEnDate">MMM DDD</span>
+                </div>
+                <div class="day-number" id="calDayNum">14</div>
+            </div>
+            <div class="cal-grid" id="miniCalendar">
+                <div class="wk-header sunday"><span class="cn">日</span><span class="en">SUN</span></div>
+                <div class="wk-header"><span class="cn">一</span><span class="en">MON</span></div>
+                <div class="wk-header"><span class="cn">二</span><span class="en">TUE</span></div>
+                <div class="wk-header"><span class="cn">三</span><span class="en">WED</span></div>
+                <div class="wk-header"><span class="cn">四</span><span class="en">THU</span></div>
+                <div class="wk-header"><span class="cn">五</span><span class="en">FRI</span></div>
+                <div class="wk-header"><span class="cn">六</span><span class="en">SAT</span></div>
+            </div>
+        </div>
+
+        <!-- 2. 左下：巨型數位時鐘卡片 -->
+        <div class="glass-card clock-card">
+            <div class="time-12hr" id="time12">04:29 <span>PM</span></div>
+            <div class="time-24hr" id="time24">16:29</div>
+        </div>
+
+        <!-- 3. 右上：即時天氣卡片 -->
+        <div class="glass-card weather-card">
+            <div class="weather-top">
+                <select id="districtSelect" class="location-select" onchange="updateDistrictTemp()">
+                    <option value="香港天文台">香港天文台總部</option>
+                    <option value="京士柏">京士柏</option>
+                    <option value="黃竹坑">黃竹坑</option>
+                    <option value="打鼓嶺">打鼓嶺</option>
+                    <option value="流浮山">流浮山</option>
+                    <option value="大埔">大埔</option>
+                    <option value="沙田" selected>沙田</option>
+                    <option value="屯門">屯門</option>
+                    <option value="將軍澳">將軍澳</option>
+                    <option value="西貢">西貢</option>
+                    <option value="長洲">長洲</option>
+                    <option value="赤鱲角">赤鱲角</option>
+                    <option value="青衣">青衣</option>
+                    <option value="石崗">石崗</option>
+                    <option value="荃灣可觀">荃灣</option>
+                    <option value="九龍城">九龍城</option>
+                    <option value="深水埗">深水埗</option>
+                    <option value="黃大仙">黃大仙</option>
+                    <option value="觀塘">觀塘</option>
+                </select>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <button class="sync-btn" onclick="syncAllData()">🔄 同步</button>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.7);" id="updateTimeLabel">更新: --:--</div>
+                </div>
+            </div>
+            <div class="weather-info-row">
+                <div>
+                    <div class="temp-display" id="currentTemp">--°C</div>
+                    <div class="today-high-low" id="todayHighLow">高 --° / 低 --°</div>
+                </div>
+                <div class="weather-details-right">
+                    <div class="condition" id="currentGeneral">--</div>
+                    <div class="details" id="currentDetails">相對濕度：--%</div>
+                </div>
+            </div>
+        </div>
+
+<div class="glass-card forecast-card">
+            <div class="forecast-title">
+                <span>香港九天天氣預報</span>
+                <span id="updateStatus" style="font-size: 8px; font-weight: normal; color: #86efac;">已同步</span>
+            </div>
+            <div class="forecast-list" id="forecastList">
+                <div class="forecast-row"><span class="f-day">--月--日 (--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
+                <div class="forecast-row"><span class="f-day">--月--日 (--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
+                <div class="forecast-row"><span class="f-day">--月--日 (--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
+                <div class="forecast-row"><span class="f-day">--月--日 (--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
+                <div class="forecast-row"><span class="f-day">--月--日 (--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
+            </div>
+        </div>
+    </div>
+<script>
+        let globalWeatherData = null;
+        let globalForecastData = null;
+        let hkHolidays = {};
+
+        // 1. 自動獲取香港政府公眾假期 API
+        async function fetchHkHolidays() {
+            try {
+                const res = await fetch(`https://data.gov.hk/v1/ls/datastore?resource=932c0211-1377-4952-b430-bf824e8e50bc&limit=300`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.records) {
+                        data.records.forEach(rec => {
+                            let dStr = rec.Date || rec.Holidays || Object.values(rec)[0];
+                            let nameStr = rec.Name || rec.Holiday || Object.values(rec)[1];
+                            if (dStr && nameStr) {
+                                let shortName = nameStr.length > 3 ? nameStr.substring(0, 3) : nameStr;
+                                if (nameStr.includes('初一')) shortName = '初一';
+                                else if (nameStr.includes('初二')) shortName = '初二';
+                                else if (nameStr.includes('初三')) shortName = '初三';
+                                else if (nameStr.includes('元旦')) shortName = '元旦';
+                                else if (nameStr.includes('清明')) shortName = '清明';
+                                else if (nameStr.includes('勞動')) shortName = '勞動';
+                                else if (nameStr.includes('端午')) shortName = '端午';
+                                else if (nameStr.includes('香港特別')) shortName = '七一';
+                                else if (nameStr.includes('國慶')) shortName = '國慶';
+                                else if (nameStr.includes('重陽')) shortName = '重陽';
+                                else if (nameStr.includes('中秋')) shortName = '中秋';
+                                else if (nameStr.includes('聖誕')) shortName = '聖誕';
+                                
+                                hkHolidays[dStr] = shortName;
+                            }
+                        });
+                    }
+                }
+            } catch (e) {
+                console.log("公眾假期 API 獲取失敗，使用內置備用對照", e);
+            }
+        }
+
+        // 2. 更新時鐘與日曆
+        function updateTimeAndCalendar() {
+            const now = new Date();
+            const hours24 = now.getHours();
+            const minutes = now.getMinutes();
+
+            const hh24 = String(hours24).padStart(2, '0');
+            const mm = String(minutes).padStart(2, '0');
+            document.getElementById('time24').innerText = `${hh24}:${mm}`;
+
+            const ampm = hours24 >= 12 ? 'PM' : 'AM';
+            let hours12 = hours24 % 12;
+            hours12 = hours12 ? hours12 : 12;
+            const hh12 = String(hours12).padStart(2, '0');
+            document.getElementById('time12').innerHTML = `${hh12}:${mm} <span>${ampm}</span>`;
+
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const date = now.getDate();
+            const cnMonths = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+            const engMonths = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            const engWeekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+            
+            document.getElementById('calCnDate').innerText = `${year}年${cnMonths[month]}${date}日`;
+            document.getElementById('calEnDate').innerText = `${engMonths[month]} ${engWeekdays[now.getDay()]}`;
+            document.getElementById('calDayNum').innerText = date;
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const prevTotalDays = new Date(year, month, 0).getDate();
+
+            const calGrid = document.getElementById('miniCalendar');
+            let html = `
+                <div class="wk-header sunday"><span class="cn">日</span><span class="en">SUN</span></div>
+                <div class="wk-header"><span class="cn">一</span><span class="en">MON</span></div>
+                <div class="wk-header"><span class="cn">二</span><span class="en">TUE</span></div>
+                <div class="wk-header"><span class="cn">三</span><span class="en">WED</span></div>
+                <div class="wk-header"><span class="cn">四</span><span class="en">THU</span></div>
+                <div class="wk-header"><span class="cn">五</span><span class="en">FRI</span></div>
+                <div class="wk-header"><span class="cn">六</span><span class="en">SAT</span></div>
+            `;
+
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                html += `<div class="day-cell dim"><span class="num">${prevTotalDays - i}</span></div>`;
+            }
+
+            for (let d = 1; d <= totalDays; d++) {
+                const isToday = (d === date) ? 'today' : '';
+                const dayOfWeek = (firstDayIndex + d - 1) % 7;
+                const isSunday = (dayOfWeek === 0) ? 'sunday' : '';
+                
+                const mStr = String(month + 1).padStart(2, '0');
+                const dStr = String(d).padStart(2, '0');
+                const dateKey = `${year}-${mStr}-${dStr}`;
+                const holidayName = hkHolidays[dateKey];
+                
+                let holidayClass = (holidayName || isSunday) ? 'holiday-cell' : '';
+                let tagHtml = holidayName ? `<span class="holiday-tag">${holidayName}</span>` : '';
+
+                html += `
+                    <div class="day-cell ${isToday} ${isSunday} ${holidayClass}">
+                        <span class="num">${d}</span>
+                        ${tagHtml}
+                    </div>
+                `;
+            }
+
+            const totalCells = firstDayIndex + totalDays;
+            const nextDays = totalCells <= 35 ? 35 - totalCells : 42 - totalCells;
+            for (let d = 1; d <= nextDays; d++) {
+                html += `<div class="day-cell dim"><span class="num">${d}</span></div>`;
+            }
+            calGrid.innerHTML = html;
+        }
+
+        setInterval(updateTimeAndCalendar, 1000);
+        updateTimeAndCalendar();
+
+        document.addEventListener("visibilitychange", function() {
+            if (!document.hidden) updateTimeAndCalendar();
+        });
+        window.addEventListener("focus", function() {
+            updateTimeAndCalendar();
+        });
+
+        // 3. 更新溫度
+        function updateDistrictTemp() {
+            const selectedPlace = document.getElementById('districtSelect').value;
+            if (!globalWeatherData || !globalWeatherData.temperature) return;
+
+            const item = globalWeatherData.temperature.data.find(t => t.place === selectedPlace);
+            if (item) {
+                document.getElementById('currentTemp').innerText = `${item.value}°C`;
+            } else {
+                document.getElementById('currentTemp').innerText = `--°C`;
+            }
+
+            if (globalForecastData && globalForecastData.weatherForecast && globalForecastData.weatherForecast.length > 0) {
+                const todayForecast = globalForecastData.weatherForecast[0];
+                document.getElementById('todayHighLow').innerText = `高 ${todayForecast.forecastMaxtemp.value}° / 低 ${todayForecast.forecastMintemp.value}°`;
+            }
+        }
+
+        // 4. 串接天文台 API
+        async function fetchHkoData(dataType, lang = 'tc') {
+            const url = `https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=${dataType}&lang=${lang}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
+            return await response.json();
+        }
+
+        async function syncAllData() {
+            document.getElementById('updateStatus').innerText = "同步中...";
+            try {
+                await fetchHkHolidays();
+                const [current, forecast] = await Promise.all([
+                    fetchHkoData('rhrread'),
+                    fetchHkoData('fnd')
+                ]);
+
+                globalWeatherData = current;
+                globalForecastData = forecast;
+                updateDistrictTemp();
+
+                if (current.updateTime) {
+                    document.getElementById('updateTimeLabel').innerText = `更新: ${current.updateTime.substring(11, 16)}`;
+                }
+
+                const humidity = current.humidity?.data?.[0];
+                document.getElementById('currentDetails').innerText = humidity ? `相對濕度：${humidity.value}%` : '';
+                document.getElementById('currentGeneral').innerText = "本港地區天氣報告";
+
+                if (forecast && forecast.weatherForecast) {
+                    let forecastHtml = '';
+                    forecast.weatherForecast.forEach((day) => {
+                        let m = parseInt(day.forecastDate.substring(4, 6), 10);
+                        let d = parseInt(day.forecastDate.substring(6, 8), 10);
+                        let shortWeek = day.week ? day.week.replace('星期', '') : '';
+                        forecastHtml += `
+                            <div class="forecast-row">
+                                <span class="f-day">${m}月${d}日 (${shortWeek})</span>
+                                <span class="f-cond" title="${day.forecastWeather}">${day.forecastWeather.trim()}</span>
+                                <span class="f-temp">${day.forecastMaxtemp.value}° / ${day.forecastMintemp.value}°</span>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('forecastList').innerHTML = forecastHtml;
+                    document.getElementById('updateStatus').innerText = "已同步";
+                }
+            } catch (error) {
+                console.error('API 讀取受阻（跨域或無網絡）:', error);
+                document.getElementById('updateStatus').innerText = "實時模式";
+                document.getElementById('currentTemp').innerText = "--°C";
+                document.getElementById('todayHighLow').innerText = "高 --° / 低 --°";
+                document.getElementById('currentGeneral').innerText = "--";
+                document.getElementById('currentDetails').innerText = "相對濕度：--%";
+            }
+        }
+
+        syncAllData();
+        setInterval(syncAllData, 10 * 60 * 1000);
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Iph7 Home View</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2b3a32 0%, #17211b 100%);
+            color: #f0fdf4;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 預設：直向模式 (Portrait 375x667) */
+        .dashboard {
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto 1fr;
+            gap: 8px;
+            max-width: 500px;
+            max-height: 800px;
+        }
+
+        /* iOS 頂級玻璃擬物卡片風格 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 18px;
+            padding: 10px 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        /* 日曆卡片 */
+        .calendar-card {
+            width: 100%;
+        }
+
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .cal-header .weekday-month {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cal-header .weekday-month .cn-date {
             font-size: 19px;
             font-weight: 700;
             color: #86efac;
