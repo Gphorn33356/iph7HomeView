@@ -71,14 +71,14 @@
         }
 
         .cal-header .weekday-month .cn-date {
-            font-size: 14px;
+            font-size: 24px;
             font-weight: 700;
             color: #86efac;
             line-height: 1.1;
         }
 
         .cal-header .weekday-month .en-date {
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.6);
             text-transform: uppercase;
@@ -182,7 +182,7 @@
         }
 
         .time-12hr {
-            font-size: 80px;
+            font-size: 56px;
             font-weight: 700;
             color: #ffffff;
             letter-spacing: -1px;
@@ -190,14 +190,14 @@
         }
 
         .time-12hr span {
-            font-size: 24px;
+            font-size: 36px;
             font-weight: 600;
             color: #86efac;
             margin-left: 4px;
         }
 
         .time-24hr {
-            font-size: 72px;
+            font-size: 48px;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.75);
             margin-top: 4px;
@@ -220,7 +220,7 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 6px;
             color: #ffffff;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 600;
             padding: 2px 4px;
             outline: none;
@@ -235,7 +235,7 @@
             background: rgba(134, 239, 172, 0.2);
             border: 1px solid rgba(134, 239, 172, 0.4);
             color: #86efac;
-            font-size: 9px;
+            font-size: 14px;
             padding: 2px 6px;
             border-radius: 5px;
             cursor: pointer;
@@ -250,15 +250,14 @@
         }
 
         .temp-display {
-            font-size: 36px;
+            font-size: 48px;
             font-weight: 700;
             color: #ffffff;
             line-height: 1;
         }
 
-        /* 加大後的今日高低溫字體 */
         .today-high-low {
-            font-size: 14px;
+            font-size: 18px;
             color: #ffffff;
             margin-top: 3px;
             font-weight: 600;
@@ -274,9 +273,8 @@
             color: #86efac;
         }
 
-        /* 加大後的相對濕度字體 */
         .details {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
             color: #86efac;
             margin-top: 2px;
@@ -288,7 +286,7 @@
         }
 
         .forecast-title {
-            font-size: 11px;
+            font-size: 18px;
             font-weight: 700;
             color: #86efac;
             margin-bottom: 4px;
@@ -314,21 +312,43 @@
             border-radius: 3px;
         }
 
+        /* 預報行調整：支援不換行與靠左對齊 */
         .forecast-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 10px;
+            font-size: 13px;
             background: rgba(255, 255, 255, 0.08);
-            padding: 4px 8px;
+            padding: 7px 12px;
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             flex-shrink: 0;
         }
 
-        .f-day { width: 85px; color: #e2e8f0; font-weight: 500; }
-        .f-cond { flex-grow: 1; text-align: center; color: rgba(255, 255, 255, 0.8); padding: 0 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .f-temp { font-weight: 700; color: #ffffff; width: 60px; text-align: right; }
+        .f-day { 
+            width: 130px; 
+            color: #e2e8f0; 
+            font-weight: 500; 
+            white-space: nowrap; 
+        }
+
+        .f-cond { 
+            flex-grow: 1; 
+            text-align: left; 
+            color: rgba(255, 255, 255, 0.9); 
+            padding: 0 10px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+        }
+
+        .f-temp { 
+            font-weight: 700; 
+            color: #ffffff; 
+            width: 75px; 
+            text-align: right; 
+            white-space: nowrap; 
+        }
 
 
         /* ================= 橫向模式 (Landscape - iPhone 7 橫向 667x375) ================= */
@@ -354,11 +374,11 @@
             }
 
             .time-12hr {
-                font-size: 42px;
+                font-size: 56px;
             }
 
             .time-24hr {
-                font-size: 22px;
+                font-size: 48px;
             }
 
             .weather-card {
@@ -384,8 +404,8 @@
         <div class="glass-card calendar-card">
             <div class="cal-header">
                 <div class="weekday-month">
-                    <span class="cn-date" id="calCnDate">2026年11月14日</span>
-                    <span class="en-date" id="calEnDate">NOV SAT</span>
+                    <span class="cn-date" id="calCnDate">YYYY年MM月DD日</span>
+                    <span class="en-date" id="calEnDate">MMM DDD</span>
                 </div>
                 <div class="day-number" id="calDayNum">14</div>
             </div>
@@ -402,8 +422,8 @@
 
         <!-- 2. 左下：巨型數位時鐘卡片 -->
         <div class="glass-card clock-card">
-            <div class="time-12hr" id="time12">--:-- <span>PM</span></div>
-            <div class="time-24hr" id="time24">--:--</div>
+            <div class="time-12hr" id="time12">04:29 <span>PM</span></div>
+            <div class="time-24hr" id="time24">16:29</div>
         </div>
 
         <!-- 3. 右上：即時天氣卡片 -->
@@ -432,7 +452,7 @@
                 </select>
                 <div style="display: flex; align-items: center; gap: 4px;">
                     <button class="sync-btn" onclick="syncAllData()">🔄 同步</button>
-                    <div style="font-size: 16px; color: rgba(255,255,255,0.7);" id="updateTimeLabel">更新: --:--</div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.7);" id="updateTimeLabel">更新: --:--</div>
                 </div>
             </div>
             <div class="weather-info-row">
