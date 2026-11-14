@@ -71,10 +71,11 @@
         }
 
         .cal-header .weekday-month .cn-date {
-            font-size: 24px;
+            font-size: 19px;
             font-weight: 700;
             color: #86efac;
             line-height: 1.1;
+            white-space: nowrap;
         }
 
         .cal-header .weekday-month .en-date {
@@ -265,6 +266,25 @@
 
         .weather-details-right {
             text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        /* 純白 SVG 天氣圖示樣式 */
+        .weather-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2px;
+        }
+
+        .weather-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: #ffffff;
         }
 
         .condition {
@@ -312,7 +332,6 @@
             border-radius: 3px;
         }
 
-        /* 預報行調整：支援不換行與靠左對齊 */
         .forecast-row {
             display: flex;
             justify-content: space-between;
@@ -354,7 +373,7 @@
         /* ================= 橫向模式 (Landscape - iPhone 7 橫向 667x375) ================= */
         @media screen and (orientation: landscape) {
             .dashboard {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr 2fr;
                 grid-template-rows: 1fr 1fr;
                 gap: 8px;
                 padding: 6px;
@@ -374,11 +393,11 @@
             }
 
             .time-12hr {
-                font-size: 56px;
+                font-size: 42px;
             }
 
             .time-24hr {
-                font-size: 48px;
+                font-size: 32px;
             }
 
             .weather-card {
@@ -461,13 +480,18 @@
                     <div class="today-high-low" id="todayHighLow">高 --° / 低 --°</div>
                 </div>
                 <div class="weather-details-right">
-                    <div class="condition" id="currentGeneral">--</div>
+                    <div class="weather-icon" id="weatherIcon">
+                        <!-- 預設純白多雲圖示 -->
+                        <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+                    </div>
+                    <div class="condition" id="currentGeneral">本港地區天氣報告</div>
                     <div class="details" id="currentDetails">相對濕度：--%</div>
                 </div>
             </div>
         </div>
 
-<div class="glass-card forecast-card">
+        <!-- 4. 右下：九天天氣預報卡片 -->
+        <div class="glass-card forecast-card">
             <div class="forecast-title">
                 <span>香港九天天氣預報</span>
                 <span id="updateStatus" style="font-size: 8px; font-weight: normal; color: #86efac;">已同步</span>
@@ -481,7 +505,8 @@
             </div>
         </div>
     </div>
-<script>
+
+    <script>
         let globalWeatherData = null;
         let globalForecastData = null;
         let hkHolidays = {};
@@ -540,11 +565,11 @@
             const year = now.getFullYear();
             const month = now.getMonth();
             const date = now.getDate();
-            const cnMonths = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
             const engMonths = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
             const engWeekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
             
-            document.getElementById('calCnDate').innerText = `${year}年${cnMonths[month]}${date}日`;
+            // 改為數字月格式：例如 2026年11月14日
+            document.getElementById('calCnDate').innerText = `${year}年${month + 1}月${date}日`;
             document.getElementById('calEnDate').innerText = `${engMonths[month]} ${engWeekdays[now.getDay()]}`;
             document.getElementById('calDayNum').innerText = date;
 
@@ -606,7 +631,29 @@
             updateTimeAndCalendar();
         });
 
-        // 3. 更新溫度
+        // 根據天氣文字動態生成純白 SVG 向量圖示
+        function getWeatherSvg(text) {
+            if (!text) text = "";
+            
+            if (text.includes("雷") || text.includes("暴")) {
+                return `<svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/><path d="M13 11l-4 6h3l-1 4 5-7h-3l2-3z" fill="#ffffff"/></svg>`;
+            }
+            if (text.includes("雨") || text.includes("驟雨")) {
+                return `<svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/><path d="M8 17l-1 3m5-3l-1 3m5-3l-1 3" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/></svg>`;
+            }
+            if (text.includes("晴") || text.includes("明朗")) {
+                return `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42m12.72-12.72l1.42-1.42" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/></svg>`;
+            }
+            if (text.includes("多雲") || text.includes("陰")) {
+                return `<svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>`;
+            }
+            if (text.includes("霧") || text.includes("霾")) {
+                return `<svg viewBox="0 0 24 24"><path d="M3 10h18M5 14h14M3 18h18M6 6h12" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/></svg>`;
+            }
+            return `<svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>`;
+        }
+
+        // 3. 更新溫度與圖示
         function updateDistrictTemp() {
             const selectedPlace = document.getElementById('districtSelect').value;
             if (!globalWeatherData || !globalWeatherData.temperature) return;
@@ -621,6 +668,9 @@
             if (globalForecastData && globalForecastData.weatherForecast && globalForecastData.weatherForecast.length > 0) {
                 const todayForecast = globalForecastData.weatherForecast[0];
                 document.getElementById('todayHighLow').innerText = `高 ${todayForecast.forecastMaxtemp.value}° / 低 ${todayForecast.forecastMintemp.value}°`;
+                
+                const weatherText = todayForecast.forecastWeather || "";
+                document.getElementById('weatherIcon').innerHTML = getWeatherSvg(weatherText);
             }
         }
 
@@ -651,7 +701,6 @@
 
                 const humidity = current.humidity?.data?.[0];
                 document.getElementById('currentDetails').innerText = humidity ? `相對濕度：${humidity.value}%` : '';
-                document.getElementById('currentGeneral').innerText = "本港地區天氣報告";
 
                 if (forecast && forecast.weatherForecast) {
                     let forecastHtml = '';
@@ -675,7 +724,7 @@
                 document.getElementById('updateStatus').innerText = "實時模式";
                 document.getElementById('currentTemp').innerText = "--°C";
                 document.getElementById('todayHighLow').innerText = "高 --° / 低 --°";
-                document.getElementById('currentGeneral').innerText = "--";
+                document.getElementById('weatherIcon').innerHTML = getWeatherSvg("多雲");
                 document.getElementById('currentDetails').innerText = "相對濕度：--%";
             }
         }
