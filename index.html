@@ -190,7 +190,7 @@
         }
 
         .time-12hr {
-            font-size: 56px;
+            font-size: 44px;
             font-weight: 700;
             color: #ffffff;
             letter-spacing: -1px;
@@ -198,17 +198,17 @@
         }
 
         .time-12hr span {
-            font-size: 36px;
+            font-size: 28px;
             font-weight: 600;
             color: #86efac;
-            margin-left: 4px;
+            margin-left: 3px;
         }
 
         .time-24hr {
-            font-size: 48px;
+            font-size: 38px;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.75);
-            margin-top: 4px;
+            margin-top: 6px;
             letter-spacing: -0.5px;
         }
 
@@ -349,7 +349,6 @@
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             flex-shrink: 0;
-            cursor: pointer;
             user-select: none;
         }
 
@@ -368,6 +367,7 @@
             overflow: hidden; 
             text-overflow: ellipsis; 
             white-space: nowrap; 
+            cursor: pointer;
         }
 
         .f-temp { 
@@ -425,11 +425,11 @@
             }
 
             .time-12hr {
-                font-size: 42px;
+                font-size: 34px;
             }
 
             .time-24hr {
-                font-size: 32px;
+                font-size: 28px;
             }
 
             .weather-card {
@@ -474,10 +474,10 @@
             </div>
         </div>
 
-        <!-- 2. 左下：巨型數位時鐘卡片 -->
+        <!-- 2. 左下：具備秒數的巨型數位時鐘卡片 -->
         <div class="glass-card clock-card">
-            <div class="time-12hr" id="time12">04:29 <span>PM</span></div>
-            <div class="time-24hr" id="time24">16:29</div>
+            <div class="time-12hr" id="time12">07:37:05 <span>PM</span></div>
+            <div class="time-24hr" id="time24">19:37:05</div>
         </div>
 
         <!-- 3. 右上：即時天氣卡片 -->
@@ -611,24 +611,27 @@
                     }
                 }
             } catch (e) {
-                console.log("公眾假期 API 獲取失敗，使用高精確度內置備用表", e);
+                console.log("公眾假期 API 獲取失敗", e);
             }
         }
 
+        // 更新時鐘與日曆（含秒數）
         function updateTimeAndCalendar() {
             const now = new Date();
             const hours24 = now.getHours();
             const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
 
             const hh24 = String(hours24).padStart(2, '0');
             const mm = String(minutes).padStart(2, '0');
-            document.getElementById('time24').innerText = `${hh24}:${mm}`;
+            const ss = String(seconds).padStart(2, '0');
+            document.getElementById('time24').innerText = `${hh24}:${mm}:${ss}`;
 
             const ampm = hours24 >= 12 ? 'PM' : 'AM';
             let hours12 = hours24 % 12;
             hours12 = hours12 ? hours12 : 12;
             const hh12 = String(hours12).padStart(2, '0');
-            document.getElementById('time12').innerHTML = `${hh12}:${mm} <span>${ampm}</span>`;
+            document.getElementById('time12').innerHTML = `${hh12}:${mm}:${ss} <span>${ampm}</span>`;
 
             let targetYear = now.getFullYear();
             let targetMonth = now.getMonth() + calendarMonthOffset;
@@ -733,6 +736,7 @@
                     swipeArea.style.opacity = '1';
                 }, 150);
                 
+                // 2 秒後自動返回當日
                 calendarReturnTimer = setTimeout(() => {
                     calendarMonthOffset = 0;
                     swipeArea.style.transform = 'scale(0.98)';
@@ -742,7 +746,7 @@
                         swipeArea.style.transform = 'scale(1)';
                         swipeArea.style.opacity = '1';
                     }, 150);
-                }, 3000);
+                }, 2000);
             }
         }, {passive: true});
 
@@ -777,7 +781,7 @@
                         swipeArea.style.transform = 'scale(1)';
                         swipeArea.style.opacity = '1';
                     }, 150);
-                }, 3000);
+                }, 2000);
             }
         });
 
@@ -864,9 +868,9 @@
                         let fullWeatherText = day.forecastWeather ? day.forecastWeather.trim() : '';
 
                         forecastHtml += `
-                            <div class="forecast-row" data-fulltext="${fullWeatherText}">
+                            <div class="forecast-row">
                                 <span class="f-day">${m}月${d}日 (${shortWeek})</span>
-                                <span class="f-cond">${fullWeatherText}</span>
+                                <span class="f-cond" data-fulltext="${fullWeatherText}">${fullWeatherText}</span>
                                 <span class="f-temp">${day.forecastMaxtemp.value}° / ${day.forecastMintemp.value}°</span>
                             </div>
                         `;
@@ -886,13 +890,13 @@
             }
         }
 
-        // 優化長按邏輯：支援滾動，不鎖死預報列表滑動
+        // 僅限文字欄位（f-cond）支援長按彈出，不影響列表上下滾動
         function setupForecastPopupEvents() {
             const popup = document.getElementById('forecastPopup');
-            const rows = document.querySelectorAll('.forecast-row');
+            const condElements = document.querySelectorAll('.f-cond');
 
-            rows.forEach(row => {
-                const fullText = row.getAttribute('data-fulltext');
+            condElements.forEach(el => {
+                const fullText = el.getAttribute('data-fulltext');
                 if (!fullText) return;
 
                 let pressTimer = null;
@@ -913,15 +917,15 @@
                     popup.style.display = 'none';
                 };
 
-                row.addEventListener('mousedown', startPress);
-                row.addEventListener('mouseup', cancelPress);
-                row.addEventListener('mouseleave', cancelPress);
-                row.addEventListener('mousemove', cancelPress);
+                el.addEventListener('mousedown', startPress);
+                el.addEventListener('mouseup', cancelPress);
+                el.addEventListener('mouseleave', cancelPress);
+                el.addEventListener('mousemove', cancelPress);
 
-                row.addEventListener('touchstart', startPress, {passive: true});
-                row.addEventListener('touchend', cancelPress);
-                row.addEventListener('touchcancel', cancelPress);
-                row.addEventListener('touchmove', cancelPress); // 滾動時自動取消長按，確保列表可上下滑動
+                el.addEventListener('touchstart', startPress, {passive: true});
+                el.addEventListener('touchend', cancelPress);
+                el.addEventListener('touchcancel', cancelPress);
+                el.addEventListener('touchmove', cancelPress);
             });
         }
 
