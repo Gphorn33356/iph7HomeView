@@ -15,7 +15,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-/* 1. 改用類似圖中的深藍紫色流光漸層背景，讓透明度有豐富的內容可透出 */
         body {
             background: radial-gradient(circle at 20% 20%, #3d528a 0%, #171c2e 50%, #0b0f19 100%);
             color: #f0fdf4;
@@ -40,17 +39,15 @@
             max-height: 800px;
         }
 
-/* 2. 升級 Box 卡片為高透明度毛玻璃風格 */
+        /* iOS 頂級高透明毛玻璃擬物卡片風格 */
         .glass-card {
-            background: rgba(255, 255, 255, 0.07); /* 透明度調低（原本是 0.12），讓背景更透 */
-            backdrop-filter: blur(35px);            /* 加強毛玻璃的模糊厚度 */
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(35px);
             -webkit-backdrop-filter: blur(35px);
-            border: 1px solid rgba(255, 255, 255, 0.15); /* 細緻的半透明邊框 */
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 22px;
-            padding: 12px 14px;
-            /* 核心：製造真實玻璃立體感的陰影與頂部高光線條 */
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 
-                        inset 0 1px 1.5px rgba(255, 255, 255, 0.4); 
+            padding: 10px 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 1.5px rgba(255, 255, 255, 0.4);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -62,17 +59,27 @@
             width: 100%;
         }
 
-        /* 僅內側日曆區域可滑動 */
-        .cal-swipe-area {
-            touch-action: pan-y;
+        /* 可上下滾動的日曆日期檢視框 */
+        .cal-scroll-area {
+            max-height: 95px;
+            overflow-y: auto;
+            padding-right: 2px;
             user-select: none;
-            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .cal-scroll-area::-webkit-scrollbar {
+            width: 3px;
+        }
+        .cal-scroll-area::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
         }
 
         .cal-header {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
+            margin-bottom: 2px;
         }
 
         .cal-header .weekday-month {
@@ -109,15 +116,21 @@
             grid-template-columns: repeat(7, 1fr);
             gap: 1px;
             text-align: center;
-            margin-top: 3px;
         }
 
-        .cal-grid .wk-header {
+        /* 固定的星期表頭（完全獨立，絕不重疊） */
+        .wk-grid-header {
+            margin-top: 2px;
+            margin-bottom: 2px;
+            padding-bottom: 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .wk-grid-header .wk-header {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding-bottom: 1px;
         }
 
         .wk-header .cn {
@@ -134,7 +147,7 @@
             text-transform: uppercase;
         }
 
-        .cal-grid .wk-header.sunday .cn {
+        .wk-grid-header .wk-header.sunday .cn {
             color: #f87171;
         }
 
@@ -463,17 +476,21 @@
                 </div>
                 <div class="day-number" id="calDayNum">--</div>
             </div>
-            <!-- 僅此內側區域支援滑動換月 -->
-            <div class="cal-swipe-area" id="calSwipeArea">
-                <div class="cal-grid" id="miniCalendar">
-                    <div class="wk-header sunday"><span class="cn">日</span><span class="en">SUN</span></div>
-                    <div class="wk-header"><span class="cn">一</span><span class="en">MON</span></div>
-                    <div class="wk-header"><span class="cn">二</span><span class="en">TUE</span></div>
-                    <div class="wk-header"><span class="cn">三</span><span class="en">WED</span></div>
-                    <div class="wk-header"><span class="cn">四</span><span class="en">THU</span></div>
-                    <div class="wk-header"><span class="cn">五</span><span class="en">FRI</span></div>
-                    <div class="wk-header"><span class="cn">六</span><span class="en">SAT</span></div>
-                </div>
+
+            <!-- 固定不滾動的星期表頭 -->
+            <div class="cal-grid wk-grid-header">
+                <div class="wk-header sunday"><span class="cn">日</span><span class="en">SUN</span></div>
+                <div class="wk-header"><span class="cn">一</span><span class="en">MON</span></div>
+                <div class="wk-header"><span class="cn">二</span><span class="en">TUE</span></div>
+                <div class="wk-header"><span class="cn">三</span><span class="en">WED</span></div>
+                <div class="wk-header"><span class="cn">四</span><span class="en">THU</span></div>
+                <div class="wk-header"><span class="cn">五</span><span class="en">FRI</span></div>
+                <div class="wk-header"><span class="cn">六</span><span class="en">SAT</span></div>
+            </div>
+
+            <!-- 可上下平滑滾動的日曆日期區 -->
+            <div class="cal-scroll-area" id="calScrollArea">
+                <div class="cal-grid" id="miniCalendar"></div>
             </div>
         </div>
 
@@ -572,8 +589,8 @@
             "2027-12-27": "聖誕後"
         };
 
-        let calendarMonthOffset = 0;
         let calendarReturnTimer = null;
+        let isProgrammaticScroll = false;
 
         async function fetchHkHolidays() {
             try {
@@ -618,8 +635,133 @@
             }
         }
 
-        // 更新時鐘與日曆（含秒數）
-        function updateTimeAndCalendar() {
+        // 更新上方標頭日期顯示
+        function updateHeaderByDate(year, month, day) {
+            const engMonths = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            const engWeekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+            const cnWeekdays = ["日", "一", "二", "三", "四", "五", "六"];
+
+            document.getElementById('calCnDate').innerText = `${year}年${month}月${day}日`;
+            
+            let viewDateObj = new Date(year, month - 1, day);
+            let dayOfWeek = viewDateObj.getDay();
+            document.getElementById('calEnDate').innerText = `${engMonths[month - 1]} ${engWeekdays[dayOfWeek]}`;
+            document.getElementById('calDayNum').innerText = cnWeekdays[dayOfWeek];
+        }
+
+        function initCalendarView() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+            const currentDate = now.getDate();
+
+            updateHeaderByDate(currentYear, currentMonth + 1, currentDate);
+
+            const calGrid = document.getElementById('miniCalendar');
+            let html = '';
+
+            // 生成從去年 2 月到明年 12 月的連續滾動日曆
+            for (let mOffset = -3; mOffset <= 12; mOffset++) {
+                let targetDateObj = new Date(currentYear, currentMonth + mOffset, 1);
+                let targetYear = targetDateObj.getFullYear();
+                let targetMonth = targetDateObj.getMonth();
+
+                const firstDayIndex = new Date(targetYear, targetMonth, 1).getDay();
+                const totalDays = new Date(targetYear, targetMonth + 1, 0).getDate();
+                const prevTotalDays = new Date(targetYear, targetMonth, 0).getDate();
+
+                for (let i = firstDayIndex - 1; i >= 0; i--) {
+                    html += `<div class="day-cell dim"><span class="num">${prevTotalDays - i}</span></div>`;
+                }
+
+                for (let d = 1; d <= totalDays; d++) {
+                    const isToday = (d === currentDate && targetMonth === currentMonth && targetYear === currentYear) ? 'today' : '';
+                    const dayOfWeek = (firstDayIndex + d - 1) % 7;
+                    const isSunday = (dayOfWeek === 0) ? 'sunday' : '';
+                    
+                    const mStr = String(targetMonth + 1).padStart(2, '0');
+                    const dStr = String(d).padStart(2, '0');
+                    const dateKey = `${targetYear}-${mStr}-${dStr}`;
+                    const holidayName = hkHolidays[dateKey];
+                    
+                    let holidayClass = (holidayName || isSunday) ? 'holiday-cell' : '';
+                    let tagHtml = holidayName ? `<span class="holiday-tag">${holidayName}</span>` : '';
+
+                    html += `
+                        <div class="day-cell ${isToday} ${isSunday} ${holidayClass}" data-date="${dateKey}">
+                            <span class="num">${d}</span>
+                            ${tagHtml}
+                        </div>
+                    `;
+                }
+
+                const totalCells = firstDayIndex + totalDays;
+                const nextDays = totalCells <= 35 ? 35 - totalCells : 42 - totalCells;
+                for (let d = 1; d <= nextDays; d++) {
+                    html += `<div class="day-cell dim"><span class="num">${d}</span></div>`;
+                }
+            }
+
+            calGrid.innerHTML = html;
+
+            // 自動捲動到今天所在位置
+            setTimeout(() => {
+                const todayCell = calGrid.querySelector('.day-cell.today');
+                const scrollArea = document.getElementById('calScrollArea');
+                if (todayCell && scrollArea) {
+                    isProgrammaticScroll = true;
+                    scrollArea.scrollTop = todayCell.offsetTop - scrollArea.offsetTop - 5;
+                    setTimeout(() => { isProgrammaticScroll = false; }, 200);
+                }
+            }, 100);
+        }
+
+        // 滾動時即時更新上方月份與日期，並設定 5 秒無操作返回今日
+        const scrollArea = document.getElementById('calScrollArea');
+        scrollArea.addEventListener('scroll', () => {
+            if (isProgrammaticScroll) return;
+
+            const scrollRect = scrollArea.getBoundingClientRect();
+            const cells = scrollArea.querySelectorAll('.day-cell[data-date]');
+            
+            let closestCell = null;
+            let minDistance = Infinity;
+
+            cells.forEach(cell => {
+                const rect = cell.getBoundingClientRect();
+                const distance = Math.abs(rect.top - scrollRect.top);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestCell = cell;
+                }
+            });
+
+            if (closestCell) {
+                const dateStr = closestCell.getAttribute('data-date');
+                if (dateStr) {
+                    const [y, m, d] = dateStr.split('-').map(Number);
+                    updateHeaderByDate(y, m, d);
+                }
+            }
+
+            if (calendarReturnTimer) clearTimeout(calendarReturnTimer);
+            calendarReturnTimer = setTimeout(() => {
+                isProgrammaticScroll = true;
+                const todayCell = document.querySelector('.day-cell.today');
+                if (todayCell && scrollArea) {
+                    scrollArea.scrollTo({
+                        top: todayCell.offsetTop - scrollArea.offsetTop - 5,
+                        behavior: 'smooth'
+                    });
+                    const now = new Date();
+                    updateHeaderByDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
+                }
+                setTimeout(() => { isProgrammaticScroll = false; }, 500);
+            }, 5000); // 改為 5 秒後自動返回今日
+        }, {passive: true});
+
+        // 更新時鐘（含秒數）
+        function updateClock() {
             const now = new Date();
             const hours24 = now.getHours();
             const minutes = now.getMinutes();
@@ -635,164 +777,16 @@
             hours12 = hours12 ? hours12 : 12;
             const hh12 = String(hours12).padStart(2, '0');
             document.getElementById('time12').innerHTML = `${hh12}:${mm}:${ss} <span>${ampm}</span>`;
-
-            let targetYear = now.getFullYear();
-            let targetMonth = now.getMonth() + calendarMonthOffset;
-            targetYear += Math.floor(targetMonth / 12);
-            targetMonth = targetMonth % 12;
-            if (targetMonth < 0) {
-                targetMonth += 12;
-                targetYear -= 1;
-            }
-
-            const currentDate = now.getDate();
-            const currentMonthReal = now.getMonth();
-            const currentYearReal = now.getFullYear();
-
-            const engMonths = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-            const engWeekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-            const cnWeekdays = ["日", "一", "二", "三", "四", "五", "六"];
-
-            document.getElementById('calCnDate').innerText = `${targetYear}年${targetMonth + 1}月${(targetMonth === currentMonthReal && targetYear === currentYearReal) ? currentDate : 1}日`;
-            
-            let viewDateObj = new Date(targetYear, targetMonth, (targetMonth === currentMonthReal && targetYear === currentYearReal) ? currentDate : 1);
-            document.getElementById('calEnDate').innerText = `${engMonths[targetMonth]} ${engWeekdays[viewDateObj.getDay()]}`;
-            document.getElementById('calDayNum').innerText = cnWeekdays[viewDateObj.getDay()];
-
-            const firstDayIndex = new Date(targetYear, targetMonth, 1).getDay();
-            const totalDays = new Date(targetYear, targetMonth + 1, 0).getDate();
-            const prevTotalDays = new Date(targetYear, targetMonth, 0).getDate();
-
-            const calGrid = document.getElementById('miniCalendar');
-            let html = `
-                <div class="wk-header sunday"><span class="cn">日</span><span class="en">SUN</span></div>
-                <div class="wk-header"><span class="cn">一</span><span class="en">MON</span></div>
-                <div class="wk-header"><span class="cn">二</span><span class="en">TUE</span></div>
-                <div class="wk-header"><span class="cn">三</span><span class="en">WED</span></div>
-                <div class="wk-header"><span class="cn">四</span><span class="en">THU</span></div>
-                <div class="wk-header"><span class="cn">五</span><span class="en">FRI</span></div>
-                <div class="wk-header"><span class="cn">六</span><span class="en">SAT</span></div>
-            `;
-
-            for (let i = firstDayIndex - 1; i >= 0; i--) {
-                html += `<div class="day-cell dim"><span class="num">${prevTotalDays - i}</span></div>`;
-            }
-
-            for (let d = 1; d <= totalDays; d++) {
-                const isToday = (d === currentDate && targetMonth === currentMonthReal && targetYear === currentYearReal) ? 'today' : '';
-                const dayOfWeek = (firstDayIndex + d - 1) % 7;
-                const isSunday = (dayOfWeek === 0) ? 'sunday' : '';
-                
-                const mStr = String(targetMonth + 1).padStart(2, '0');
-                const dStr = String(d).padStart(2, '0');
-                const dateKey = `${targetYear}-${mStr}-${dStr}`;
-                const holidayName = hkHolidays[dateKey];
-                
-                let holidayClass = (holidayName || isSunday) ? 'holiday-cell' : '';
-                let tagHtml = holidayName ? `<span class="holiday-tag">${holidayName}</span>` : '';
-
-                html += `
-                    <div class="day-cell ${isToday} ${isSunday} ${holidayClass}">
-                        <span class="num">${d}</span>
-                        ${tagHtml}
-                    </div>
-                `;
-            }
-
-            const totalCells = firstDayIndex + totalDays;
-            const nextDays = totalCells <= 35 ? 35 - totalCells : 42 - totalCells;
-            for (let d = 1; d <= nextDays; d++) {
-                html += `<div class="day-cell dim"><span class="num">${d}</span></div>`;
-            }
-            calGrid.innerHTML = html;
         }
 
-        setInterval(updateTimeAndCalendar, 1000);
-        updateTimeAndCalendar();
-
-        const swipeArea = document.getElementById('calSwipeArea');
-        let touchStartY = 0;
-
-        swipeArea.addEventListener('touchstart', e => {
-            touchStartY = e.touches[0].clientY;
-            if (calendarReturnTimer) {
-                clearTimeout(calendarReturnTimer);
-                calendarReturnTimer = null;
-            }
-        }, {passive: true});
-
-        swipeArea.addEventListener('touchend', e => {
-            let touchEndY = e.changedTouches[0].clientY;
-            let diff = touchEndY - touchStartY;
-            if (Math.abs(diff) > 25) {
-                swipeArea.style.transform = diff > 0 ? 'translateY(6px)' : 'translateY(-6px)';
-                swipeArea.style.opacity = '0.6';
-
-                setTimeout(() => {
-                    if (diff > 0) {
-                        calendarMonthOffset--;
-                    } else {
-                        calendarMonthOffset++;
-                    }
-                    updateTimeAndCalendar();
-                    swipeArea.style.transform = 'translateY(0)';
-                    swipeArea.style.opacity = '1';
-                }, 150);
-                
-                // 2 秒後自動返回當日
-                calendarReturnTimer = setTimeout(() => {
-                    calendarMonthOffset = 0;
-                    swipeArea.style.transform = 'scale(0.98)';
-                    swipeArea.style.opacity = '0.6';
-                    setTimeout(() => {
-                        updateTimeAndCalendar();
-                        swipeArea.style.transform = 'scale(1)';
-                        swipeArea.style.opacity = '1';
-                    }, 150);
-                }, 2000);
-            }
-        }, {passive: true});
-
-        let mouseStartY = 0;
-        swipeArea.addEventListener('mousedown', e => {
-            mouseStartY = e.clientY;
-            if (calendarReturnTimer) {
-                clearTimeout(calendarReturnTimer);
-                calendarReturnTimer = null;
-            }
-        });
-        swipeArea.addEventListener('mouseup', e => {
-            let diff = e.clientY - mouseStartY;
-            if (Math.abs(diff) > 25) {
-                swipeArea.style.transform = diff > 0 ? 'translateY(6px)' : 'translateY(-6px)';
-                swipeArea.style.opacity = '0.6';
-
-                setTimeout(() => {
-                    if (diff > 0) calendarMonthOffset--;
-                    else calendarMonthOffset++;
-                    updateTimeAndCalendar();
-                    swipeArea.style.transform = 'translateY(0)';
-                    swipeArea.style.opacity = '1';
-                }, 150);
-
-                calendarReturnTimer = setTimeout(() => {
-                    calendarMonthOffset = 0;
-                    swipeArea.style.transform = 'scale(0.98)';
-                    swipeArea.style.opacity = '0.6';
-                    setTimeout(() => {
-                        updateTimeAndCalendar();
-                        swipeArea.style.transform = 'scale(1)';
-                        swipeArea.style.opacity = '1';
-                    }, 150);
-                }, 2000);
-            }
-        });
+        setInterval(updateClock, 1000);
+        updateClock();
 
         document.addEventListener("visibilitychange", function() {
-            if (!document.hidden) updateTimeAndCalendar();
+            if (!document.hidden) updateClock();
         });
         window.addEventListener("focus", function() {
-            updateTimeAndCalendar();
+            updateClock();
         });
 
         function getWeatherSvg(text) {
@@ -846,6 +840,8 @@
             document.getElementById('updateStatus').innerText = "同步中...";
             try {
                 await fetchHkHolidays();
+                initCalendarView();
+
                 const [current, forecast] = await Promise.all([
                     fetchHkoData('rhrread'),
                     fetchHkoData('fnd')
@@ -893,7 +889,6 @@
             }
         }
 
-        // 僅限文字欄位（f-cond）支援長按彈出，不影響列表上下滾動
         function setupForecastPopupEvents() {
             const popup = document.getElementById('forecastPopup');
             const condElements = document.querySelectorAll('.f-cond');
@@ -909,7 +904,7 @@
                     pressTimer = setTimeout(() => {
                         popup.innerText = fullText;
                         popup.style.display = 'block';
-                    }, 400); // 長按 400 毫秒彈出視窗
+                    }, 400);
                 };
 
                 const cancelPress = () => {
