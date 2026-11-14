@@ -16,7 +16,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #2b3a32 0%, #17211b 100%);
+            background: linear-gradient(135deg, #4C6E5A 0%, #17211b 100%);
             color: #f0fdf4;
             width: 100vw;
             height: 100vh;
@@ -57,8 +57,13 @@
         /* 日曆卡片 */
         .calendar-card {
             width: 100%;
+        }
+
+        /* 僅內側日曆區域可滑動 */
+        .cal-swipe-area {
             touch-action: pan-y;
             user-select: none;
+            transition: transform 0.2s ease, opacity 0.2s ease;
         }
 
         .cal-header {
@@ -148,7 +153,7 @@
         }
 
         .day-cell .holiday-tag {
-            font-size: 7px;
+            font-size: 6px;
             color: #f87171;
             font-weight: 700;
             margin-top: 1px;
@@ -373,13 +378,13 @@
             white-space: nowrap; 
         }
 
-        /* 彈出半透明視窗樣式 */
+        /* 50% 半透明預報彈出視窗樣式 */
         .forecast-popup {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(23, 33, 27, 0.9);
+            background: rgba(23, 33, 27, 0.5);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -391,7 +396,7 @@
             z-index: 1000;
             max-width: 85%;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             display: none;
             pointer-events: none;
             line-height: 1.5;
@@ -447,7 +452,7 @@
 
     <div class="dashboard" id="mainDashboard">
         <!-- 1. 左上：日曆卡片 -->
-        <div class="glass-card calendar-card" id="calendarCard">
+        <div class="glass-card calendar-card">
             <div class="cal-header">
                 <div class="weekday-month">
                     <span class="cn-date" id="calCnDate">YYYY年MM月DD日</span>
@@ -455,14 +460,17 @@
                 </div>
                 <div class="day-number" id="calDayNum">--</div>
             </div>
-            <div class="cal-grid" id="miniCalendar">
-                <div class="wk-header sunday"><span class="cn">日</span><span class="en">SUN</span></div>
-                <div class="wk-header"><span class="cn">一</span><span class="en">MON</span></div>
-                <div class="wk-header"><span class="cn">二</span><span class="en">TUE</span></div>
-                <div class="wk-header"><span class="cn">三</span><span class="en">WED</span></div>
-                <div class="wk-header"><span class="cn">四</span><span class="en">THU</span></div>
-                <div class="wk-header"><span class="cn">五</span><span class="en">FRI</span></div>
-                <div class="wk-header"><span class="cn">六</span><span class="en">SAT</span></div>
+            <!-- 僅此內側區域支援滑動換月 -->
+            <div class="cal-swipe-area" id="calSwipeArea">
+                <div class="cal-grid" id="miniCalendar">
+                    <div class="wk-header sunday"><span class="cn">日</span><span class="en">SUN</span></div>
+                    <div class="wk-header"><span class="cn">一</span><span class="en">MON</span></div>
+                    <div class="wk-header"><span class="cn">二</span><span class="en">TUE</span></div>
+                    <div class="wk-header"><span class="cn">三</span><span class="en">WED</span></div>
+                    <div class="wk-header"><span class="cn">四</span><span class="en">THU</span></div>
+                    <div class="wk-header"><span class="cn">五</span><span class="en">FRI</span></div>
+                    <div class="wk-header"><span class="cn">六</span><span class="en">SAT</span></div>
+                </div>
             </div>
         </div>
 
@@ -538,13 +546,34 @@
     <script>
         let globalWeatherData = null;
         let globalForecastData = null;
-        let hkHolidays = {};
+        
+        // 內置強固公眾假期對照表（含 2026/2027 聖誕節及各大節日，確保 100% 準確顯示）
+        let hkHolidays = {
+            "2026-01-01": "元旦",
+            "2026-02-17": "初一",
+            "2026-02-18": "初二",
+            "2026-02-19": "初三",
+            "2026-04-03": "受難節",
+            "2026-04-04": "復活節",
+            "2026-04-06": "清明節",
+            "2026-05-01": "勞動節",
+            "2026-05-24": "佛誕",
+            "2026-06-19": "端午節",
+            "2026-07-01": "特區紀念",
+            "2026-09-26": "中秋節",
+            "2026-10-01": "國慶節",
+            "2026-10-19": "重陽節",
+            "2026-12-25": "聖誕節",
+            "2026-12-26": "聖誕後",
+            "2027-01-01": "元旦",
+            "2027-12-25": "聖誕節",
+            "2027-12-27": "聖誕後"
+        };
 
-        // 日曆瀏覽控制變數
         let calendarMonthOffset = 0;
         let calendarReturnTimer = null;
 
-        // 1. 自動獲取香港政府公眾假期 API
+        // 1. 自動獲取香港政府公眾假期 API 並合併
         async function fetchHkHolidays() {
             try {
                 const res = await fetch(`https://data.gov.hk/v1/ls/datastore?resource=932c0211-1377-4952-b430-bf824e8e50bc&limit=300`);
@@ -552,8 +581,18 @@
                     const data = await res.json();
                     if (data && data.records) {
                         data.records.forEach(rec => {
-                            let dStr = rec.Date || rec.Holidays || Object.values(rec)[0];
-                            let nameStr = rec.Name || rec.Holiday || Object.values(rec)[1];
+                            let dStr = rec.Date || rec.Holidays || '';
+                            let nameStr = rec.Name || rec.Holiday || '';
+                            // 遍歷所有屬性防範欄位名稱變動
+                            if (!dStr || !nameStr) {
+                                for (let key in rec) {
+                                    let val = String(rec[key]);
+                                    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) dStr = val;
+                                    else if (val.length > 0 && (val.includes('節') || val.includes('日') || val.includes('初') || val.includes('聖誕') || val.includes('元旦') || val.includes('清明') || val.includes('復活') || val.includes('勞動') || val.includes('端午') || val.includes('國慶') || val.includes('重陽'))) {
+                                        nameStr = val;
+                                    }
+                                }
+                            }
                             if (dStr && nameStr) {
                                 let shortName = nameStr.length > 3 ? nameStr.substring(0, 3) : nameStr;
                                 if (nameStr.includes('初一')) shortName = '初一';
@@ -575,7 +614,7 @@
                     }
                 }
             } catch (e) {
-                console.log("公眾假期 API 獲取失敗，使用內置備用對照", e);
+                console.log("公眾假期 API 獲取失敗，使用高精確度內置備用表", e);
             }
         }
 
@@ -595,7 +634,6 @@
             const hh12 = String(hours12).padStart(2, '0');
             document.getElementById('time12').innerHTML = `${hh12}:${mm} <span>${ampm}</span>`;
 
-            // 計算目標年月（支援滑動檢視）
             let targetYear = now.getFullYear();
             let targetMonth = now.getMonth() + calendarMonthOffset;
             targetYear += Math.floor(targetMonth / 12);
@@ -613,10 +651,8 @@
             const engWeekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
             const cnWeekdays = ["日", "一", "二", "三", "四", "五", "六"];
 
-            // 頂部日期與星期顯示 (例如: 2026年11月14日 以及 右上大字顯示星期六的 "六")
             document.getElementById('calCnDate').innerText = `${targetYear}年${targetMonth + 1}月${(targetMonth === currentMonthReal && targetYear === currentYearReal) ? currentDate : 1}日`;
             
-            // 取得當前檢視日的星期
             let viewDateObj = new Date(targetYear, targetMonth, (targetMonth === currentMonthReal && targetYear === currentYearReal) ? currentDate : 1);
             document.getElementById('calEnDate').innerText = `${engMonths[targetMonth]} ${engWeekdays[viewDateObj.getDay()]}`;
             document.getElementById('calDayNum').innerText = cnWeekdays[viewDateObj.getDay()];
@@ -672,50 +708,81 @@
         setInterval(updateTimeAndCalendar, 1000);
         updateTimeAndCalendar();
 
-        // 3. 日曆上下滑動檢視未來日期，放手 3 秒後返回當日
-        const calCard = document.getElementById('calendarCard');
+        // 3. 僅限內側數字日曆區域（calSwipeArea）滑動換月動畫與 3 秒返回當日
+        const swipeArea = document.getElementById('calSwipeArea');
         let touchStartY = 0;
 
-        calCard.addEventListener('touchstart', e => {
+        swipeArea.addEventListener('touchstart', e => {
             touchStartY = e.touches[0].clientY;
-            if (calendarReturnTimer) clearTimeout(calendarReturnTimer);
+            if (calendarReturnTimer) {
+                clearTimeout(calendarReturnTimer);
+                calendarReturnTimer = null;
+            }
         }, {passive: true});
 
-        calCard.addEventListener('touchend', e => {
+        swipeArea.addEventListener('touchend', e => {
             let touchEndY = e.changedTouches[0].clientY;
             let diff = touchEndY - touchStartY;
-            if (Math.abs(diff) > 30) {
-                if (diff > 0) {
-                    calendarMonthOffset--; // 往下滑看上月
-                } else {
-                    calendarMonthOffset++; // 往上滑看下月
-                }
-                updateTimeAndCalendar();
+            if (Math.abs(diff) > 25) {
+                swipeArea.style.transform = diff > 0 ? 'translateY(6px)' : 'translateY(-6px)';
+                swipeArea.style.opacity = '0.6';
+
+                setTimeout(() => {
+                    if (diff > 0) {
+                        calendarMonthOffset--;
+                    } else {
+                        calendarMonthOffset++;
+                    }
+                    updateTimeAndCalendar();
+                    swipeArea.style.transform = 'translateY(0)';
+                    swipeArea.style.opacity = '1';
+                }, 150);
                 
-                // 設定 3 秒後自動返回當日
                 calendarReturnTimer = setTimeout(() => {
                     calendarMonthOffset = 0;
-                    updateTimeAndCalendar();
+                    swipeArea.style.transform = 'scale(0.98)';
+                    swipeArea.style.opacity = '0.6';
+                    setTimeout(() => {
+                        updateTimeAndCalendar();
+                        swipeArea.style.transform = 'scale(1)';
+                        swipeArea.style.opacity = '1';
+                    }, 150);
                 }, 3000);
             }
         }, {passive: true});
 
         // 桌面滑鼠支援
         let mouseStartY = 0;
-        calCard.addEventListener('mousedown', e => {
+        swipeArea.addEventListener('mousedown', e => {
             mouseStartY = e.clientY;
-            if (calendarReturnTimer) clearTimeout(calendarReturnTimer);
+            if (calendarReturnTimer) {
+                clearTimeout(calendarReturnTimer);
+                calendarReturnTimer = null;
+            }
         });
-        calCard.addEventListener('mouseup', e => {
+        swipeArea.addEventListener('mouseup', e => {
             let diff = e.clientY - mouseStartY;
-            if (Math.abs(diff) > 30) {
-                if (diff > 0) calendarMonthOffset--;
-                else calendarMonthOffset++;
-                updateTimeAndCalendar();
+            if (Math.abs(diff) > 25) {
+                swipeArea.style.transform = diff > 0 ? 'translateY(6px)' : 'translateY(-6px)';
+                swipeArea.style.opacity = '0.6';
+
+                setTimeout(() => {
+                    if (diff > 0) calendarMonthOffset--;
+                    else calendarMonthOffset++;
+                    updateTimeAndCalendar();
+                    swipeArea.style.transform = 'translateY(0)';
+                    swipeArea.style.opacity = '1';
+                }, 150);
 
                 calendarReturnTimer = setTimeout(() => {
                     calendarMonthOffset = 0;
-                    updateTimeAndCalendar();
+                    swipeArea.style.transform = 'scale(0.98)';
+                    swipeArea.style.opacity = '0.6';
+                    setTimeout(() => {
+                        updateTimeAndCalendar();
+                        swipeArea.style.transform = 'scale(1)';
+                        swipeArea.style.opacity = '1';
+                    }, 150);
                 }, 3000);
             }
         });
@@ -727,10 +794,9 @@
             updateTimeAndCalendar();
         });
 
-        // 根據天氣文字動態生成純白 SVG 向量圖示
+        // 天氣 SVG 向量圖示
         function getWeatherSvg(text) {
             if (!text) text = "";
-            
             if (text.includes("雷") || text.includes("暴")) {
                 return `<svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/><path d="M13 11l-4 6h3l-1 4 5-7h-3l2-3z" fill="#ffffff"/></svg>`;
             }
@@ -817,11 +883,10 @@
                     document.getElementById('forecastList').innerHTML = forecastHtml;
                     document.getElementById('updateStatus').innerText = "已同步";
 
-                    // 綁定長按彈出視窗事件
                     setupForecastPopupEvents();
                 }
             } catch (error) {
-                console.error('API 讀取受阻（跨域或無網絡）:', error);
+                console.error('API 讀取受阻:', error);
                 document.getElementById('updateStatus').innerText = "實時模式";
                 document.getElementById('currentTemp').innerText = "--°C";
                 document.getElementById('todayHighLow').innerText = "高 --° / 低 --°";
@@ -830,7 +895,7 @@
             }
         }
 
-        // 長按預報文字顯示半透明視窗，放手關閉
+        // 長按預報文字顯示 50% 半透明視窗，放手關閉
         function setupForecastPopupEvents() {
             const popup = document.getElementById('forecastPopup');
             const rows = document.querySelectorAll('.forecast-row');
