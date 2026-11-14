@@ -118,7 +118,7 @@
             text-align: center;
         }
 
-        /* 固定的星期表頭（完全獨立，絕不重疊） */
+        /* 固定的星期表頭 */
         .wk-grid-header {
             margin-top: 2px;
             margin-bottom: 2px;
@@ -500,7 +500,7 @@
             <div class="time-24hr" id="time24">19:37:05</div>
         </div>
 
-        <!-- 3. 右上：即時天氣卡片 -->
+        <!-- 3. 右上：即時天氣卡片（含 iPhone 電量顯示） -->
         <div class="glass-card weather-card">
             <div class="weather-top">
                 <select id="districtSelect" class="location-select" onchange="updateDistrictTemp()">
@@ -524,9 +524,10 @@
                     <option value="黃大仙">黃大仙</option>
                     <option value="觀塘">觀塘</option>
                 </select>
-                <div style="display: flex; align-items: center; gap: 4px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
                     <button class="sync-btn" onclick="syncAllData()">🔄 同步</button>
-                    <div style="font-size: 12px; color: rgba(255,255,255,0.7);" id="updateTimeLabel">更新: --:--</div>
+                    <!-- 新增 iPhone 電量顯示位置 -->
+                    <div style="font-size: 12px; font-weight: 600; color: #86efac; background: rgba(134, 239, 172, 0.15); padding: 2px 6px; border-radius: 5px; border: 1px solid rgba(134, 239, 172, 0.3);" id="batteryLabel">🔋 --%</div>
                 </div>
             </div>
             <div class="weather-info-row">
@@ -635,17 +636,20 @@
             }
         }
 
-        // 更新上方標頭日期顯示
-        function updateHeaderByDate(year, month, day) {
-            const engMonths = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-            const engWeekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-            const cnWeekdays = ["日", "一", "二", "三", "四", "五", "六"];
-
-            document.getElementById('calCnDate').innerText = `${year}年${month}月${day}日`;
+        // 獲取並更新 iPhone 電量
+        async function updateBatteryStatus() {
+            const batteryLabel = document.getElementById('batteryLabel');
+            if (navigator.getBattery) {
+                try {
+                    const battery = await navigator.getBattery();
+                    const updateB = () => {
+                        const level = Math.round(battery.level * 100);
+                        const charging = battery.charging ? '⚡' : '';
+                        batteryLabel.innerText = `🔋 ${charging}${level}\%`; }; updateB(); battery.addEventListener('levelchange', updateB); battery.addEventListener('chargingchange', updateB); } catch (e) { batteryLabel.innerText = '🔋 100\%'; } } else { batteryLabel.innerText = '🔋 100\%'; } }  // 更新上方標頭日期顯示 function updateHeaderByDate(year, month, day) { const engMonths = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]; const engWeekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]; const cnWeekdays = ["日", "一", "二", "三", "四", "五", "六"];  document.getElementById('calCnDate').innerText = `${year}年${month}月${day}日`;
             
             let viewDateObj = new Date(year, month - 1, day);
             let dayOfWeek = viewDateObj.getDay();
-            document.getElementById('calEnDate').innerText = `${engMonths[month - 1]} ${engWeekdays[dayOfWeek]}`;
+            document.getElementById('calEnDate').innerText = `${engMonths[month - 1]}${engWeekdays[dayOfWeek]}`;
             document.getElementById('calDayNum').innerText = cnWeekdays[dayOfWeek];
         }
 
@@ -660,7 +664,6 @@
             const calGrid = document.getElementById('miniCalendar');
             let html = '';
 
-            // 生成從去年 2 月到明年 12 月的連續滾動日曆
             for (let mOffset = -3; mOffset <= 12; mOffset++) {
                 let targetDateObj = new Date(currentYear, currentMonth + mOffset, 1);
                 let targetYear = targetDateObj.getFullYear();
@@ -671,26 +674,15 @@
                 const prevTotalDays = new Date(targetYear, targetMonth, 0).getDate();
 
                 for (let i = firstDayIndex - 1; i >= 0; i--) {
-                    html += `<div class="day-cell dim"><span class="num">${prevTotalDays - i}</span></div>`;
-                }
-
-                for (let d = 1; d <= totalDays; d++) {
-                    const isToday = (d === currentDate && targetMonth === currentMonth && targetYear === currentYear) ? 'today' : '';
-                    const dayOfWeek = (firstDayIndex + d - 1) % 7;
-                    const isSunday = (dayOfWeek === 0) ? 'sunday' : '';
-                    
-                    const mStr = String(targetMonth + 1).padStart(2, '0');
-                    const dStr = String(d).padStart(2, '0');
-                    const dateKey = `${targetYear}-${mStr}-${dStr}`;
+                    html += `<div class="day-cell dim"><span class="num">${prevTotalDays - i}</span></div>`; }  for (let d = 1; d <= totalDays; d++) { const isToday = (d === currentDate && targetMonth === currentMonth && targetYear === currentYear) ? 'today' : ''; const dayOfWeek = (firstDayIndex + d - 1) \% 7; const isSunday = (dayOfWeek === 0) ? 'sunday' : '';  const mStr = String(targetMonth + 1).padStart(2, '0'); const dStr = String(d).padStart(2, '0'); const dateKey = `${targetYear}-${mStr}-${dStr}`;
                     const holidayName = hkHolidays[dateKey];
                     
                     let holidayClass = (holidayName || isSunday) ? 'holiday-cell' : '';
                     let tagHtml = holidayName ? `<span class="holiday-tag">${holidayName}</span>` : '';
 
                     html += `
-                        <div class="day-cell ${isToday} ${isSunday} ${holidayClass}" data-date="${dateKey}">
-                            <span class="num">${d}</span>
-                            ${tagHtml}
+                        <div class="day-cell ${isToday}${isSunday} ${holidayClass}" data-date="${dateKey}">
+                            <span class="num">${d}</span>${tagHtml}
                         </div>
                     `;
                 }
@@ -698,79 +690,7 @@
                 const totalCells = firstDayIndex + totalDays;
                 const nextDays = totalCells <= 35 ? 35 - totalCells : 42 - totalCells;
                 for (let d = 1; d <= nextDays; d++) {
-                    html += `<div class="day-cell dim"><span class="num">${d}</span></div>`;
-                }
-            }
-
-            calGrid.innerHTML = html;
-
-            // 自動捲動到今天所在位置
-            setTimeout(() => {
-                const todayCell = calGrid.querySelector('.day-cell.today');
-                const scrollArea = document.getElementById('calScrollArea');
-                if (todayCell && scrollArea) {
-                    isProgrammaticScroll = true;
-                    scrollArea.scrollTop = todayCell.offsetTop - scrollArea.offsetTop - 5;
-                    setTimeout(() => { isProgrammaticScroll = false; }, 200);
-                }
-            }, 100);
-        }
-
-        // 滾動時即時更新上方月份與日期，並設定 5 秒無操作返回今日
-        const scrollArea = document.getElementById('calScrollArea');
-        scrollArea.addEventListener('scroll', () => {
-            if (isProgrammaticScroll) return;
-
-            const scrollRect = scrollArea.getBoundingClientRect();
-            const cells = scrollArea.querySelectorAll('.day-cell[data-date]');
-            
-            let closestCell = null;
-            let minDistance = Infinity;
-
-            cells.forEach(cell => {
-                const rect = cell.getBoundingClientRect();
-                const distance = Math.abs(rect.top - scrollRect.top);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestCell = cell;
-                }
-            });
-
-            if (closestCell) {
-                const dateStr = closestCell.getAttribute('data-date');
-                if (dateStr) {
-                    const [y, m, d] = dateStr.split('-').map(Number);
-                    updateHeaderByDate(y, m, d);
-                }
-            }
-
-            if (calendarReturnTimer) clearTimeout(calendarReturnTimer);
-            calendarReturnTimer = setTimeout(() => {
-                isProgrammaticScroll = true;
-                const todayCell = document.querySelector('.day-cell.today');
-                if (todayCell && scrollArea) {
-                    scrollArea.scrollTo({
-                        top: todayCell.offsetTop - scrollArea.offsetTop - 5,
-                        behavior: 'smooth'
-                    });
-                    const now = new Date();
-                    updateHeaderByDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
-                }
-                setTimeout(() => { isProgrammaticScroll = false; }, 500);
-            }, 5000); // 改為 5 秒後自動返回今日
-        }, {passive: true});
-
-        // 更新時鐘（含秒數）
-        function updateClock() {
-            const now = new Date();
-            const hours24 = now.getHours();
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-
-            const hh24 = String(hours24).padStart(2, '0');
-            const mm = String(minutes).padStart(2, '0');
-            const ss = String(seconds).padStart(2, '0');
-            document.getElementById('time24').innerText = `${hh24}:${mm}:${ss}`;
+                    html += `<div class="day-cell dim"><span class="num">${d}</span></div>`; } }  calGrid.innerHTML = html;  setTimeout(() => { const todayCell = calGrid.querySelector('.day-cell.today'); const scrollArea = document.getElementById('calScrollArea'); if (todayCell && scrollArea) { isProgrammaticScroll = true; scrollArea.scrollTop = todayCell.offsetTop - scrollArea.offsetTop - 5; setTimeout(() => { isProgrammaticScroll = false; }, 200); } }, 100); }  const scrollArea = document.getElementById('calScrollArea'); scrollArea.addEventListener('scroll', () => { if (isProgrammaticScroll) return;  const scrollRect = scrollArea.getBoundingClientRect(); const cells = scrollArea.querySelectorAll('.day-cell[data-date]');  let closestCell = null; let minDistance = Infinity;  cells.forEach(cell => { const rect = cell.getBoundingClientRect(); const distance = Math.abs(rect.top - scrollRect.top); if (distance < minDistance) { minDistance = distance; closestCell = cell; } });  if (closestCell) { const dateStr = closestCell.getAttribute('data-date'); if (dateStr) { const [y, m, d] = dateStr.split('-').map(Number); updateHeaderByDate(y, m, d); } }  if (calendarReturnTimer) clearTimeout(calendarReturnTimer); calendarReturnTimer = setTimeout(() => { isProgrammaticScroll = true; const todayCell = document.querySelector('.day-cell.today'); if (todayCell && scrollArea) { scrollArea.scrollTo({ top: todayCell.offsetTop - scrollArea.offsetTop - 5, behavior: 'smooth' }); const now = new Date(); updateHeaderByDate(now.getFullYear(), now.getMonth() + 1, now.getDate()); } setTimeout(() => { isProgrammaticScroll = false; }, 500); }, 5000); }, {passive: true});  function updateClock() { const now = new Date(); const hours24 = now.getHours(); const minutes = now.getMinutes(); const seconds = now.getSeconds();  const hh24 = String(hours24).padStart(2, '0'); const mm = String(minutes).padStart(2, '0'); const ss = String(seconds).padStart(2, '0'); document.getElementById('time24').innerText = `${hh24}:${mm}:${ss}`;
 
             const ampm = hours24 >= 12 ? 'PM' : 'AM';
             let hours12 = hours24 % 12;
@@ -781,12 +701,17 @@
 
         setInterval(updateClock, 1000);
         updateClock();
+        updateBatteryStatus();
 
         document.addEventListener("visibilitychange", function() {
-            if (!document.hidden) updateClock();
+            if (!document.hidden) {
+                updateClock();
+                updateBatteryStatus();
+            }
         });
         window.addEventListener("focus", function() {
             updateClock();
+            updateBatteryStatus();
         });
 
         function getWeatherSvg(text) {
@@ -804,131 +729,4 @@
                 return `<svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>`;
             }
             if (text.includes("霧") || text.includes("霾")) {
-                return `<svg viewBox="0 0 24 24"><path d="M3 10h18M5 14h14M3 18h18M6 6h12" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/></svg>`;
-            }
-            return `<svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>`;
-        }
-
-        function updateDistrictTemp() {
-            const selectedPlace = document.getElementById('districtSelect').value;
-            if (!globalWeatherData || !globalWeatherData.temperature) return;
-
-            const item = globalWeatherData.temperature.data.find(t => t.place === selectedPlace);
-            if (item) {
-                document.getElementById('currentTemp').innerText = `${item.value}°C`;
-            } else {
-                document.getElementById('currentTemp').innerText = `--°C`;
-            }
-
-            if (globalForecastData && globalForecastData.weatherForecast && globalForecastData.weatherForecast.length > 0) {
-                const todayForecast = globalForecastData.weatherForecast[0];
-                document.getElementById('todayHighLow').innerText = `高 ${todayForecast.forecastMaxtemp.value}° / 低 ${todayForecast.forecastMintemp.value}°`;
-                
-                const weatherText = todayForecast.forecastWeather || "";
-                document.getElementById('weatherIcon').innerHTML = getWeatherSvg(weatherText);
-            }
-        }
-
-        async function fetchHkoData(dataType, lang = 'tc') {
-            const url = `https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=${dataType}&lang=${lang}`;
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
-            return await response.json();
-        }
-
-        async function syncAllData() {
-            document.getElementById('updateStatus').innerText = "同步中...";
-            try {
-                await fetchHkHolidays();
-                initCalendarView();
-
-                const [current, forecast] = await Promise.all([
-                    fetchHkoData('rhrread'),
-                    fetchHkoData('fnd')
-                ]);
-
-                globalWeatherData = current;
-                globalForecastData = forecast;
-                updateDistrictTemp();
-
-                if (current.updateTime) {
-                    document.getElementById('updateTimeLabel').innerText = `更新: ${current.updateTime.substring(11, 16)}`;
-                }
-
-                const humidity = current.humidity?.data?.[0];
-                document.getElementById('currentDetails').innerText = humidity ? `相對濕度：${humidity.value}%` : '';
-
-                if (forecast && forecast.weatherForecast) {
-                    let forecastHtml = '';
-                    forecast.weatherForecast.forEach((day) => {
-                        let m = parseInt(day.forecastDate.substring(4, 6), 10);
-                        let d = parseInt(day.forecastDate.substring(6, 8), 10);
-                        let shortWeek = day.week ? day.week.replace('星期', '') : '';
-                        let fullWeatherText = day.forecastWeather ? day.forecastWeather.trim() : '';
-
-                        forecastHtml += `
-                            <div class="forecast-row">
-                                <span class="f-day">${m}月${d}日 (${shortWeek})</span>
-                                <span class="f-cond" data-fulltext="${fullWeatherText}">${fullWeatherText}</span>
-                                <span class="f-temp">${day.forecastMaxtemp.value}° / ${day.forecastMintemp.value}°</span>
-                            </div>
-                        `;
-                    });
-                    document.getElementById('forecastList').innerHTML = forecastHtml;
-                    document.getElementById('updateStatus').innerText = "已同步";
-
-                    setupForecastPopupEvents();
-                }
-            } catch (error) {
-                console.error('API 讀取受阻:', error);
-                document.getElementById('updateStatus').innerText = "實時模式";
-                document.getElementById('currentTemp').innerText = "--°C";
-                document.getElementById('todayHighLow').innerText = "高 --° / 低 --°";
-                document.getElementById('weatherIcon').innerHTML = getWeatherSvg("多雲");
-                document.getElementById('currentDetails').innerText = "相對濕度：--%";
-            }
-        }
-
-        function setupForecastPopupEvents() {
-            const popup = document.getElementById('forecastPopup');
-            const condElements = document.querySelectorAll('.f-cond');
-
-            condElements.forEach(el => {
-                const fullText = el.getAttribute('data-fulltext');
-                if (!fullText) return;
-
-                let pressTimer = null;
-
-                const startPress = () => {
-                    if (pressTimer) clearTimeout(pressTimer);
-                    pressTimer = setTimeout(() => {
-                        popup.innerText = fullText;
-                        popup.style.display = 'block';
-                    }, 400);
-                };
-
-                const cancelPress = () => {
-                    if (pressTimer) {
-                        clearTimeout(pressTimer);
-                        pressTimer = null;
-                    }
-                    popup.style.display = 'none';
-                };
-
-                el.addEventListener('mousedown', startPress);
-                el.addEventListener('mouseup', cancelPress);
-                el.addEventListener('mouseleave', cancelPress);
-                el.addEventListener('mousemove', cancelPress);
-
-                el.addEventListener('touchstart', startPress, {passive: true});
-                el.addEventListener('touchend', cancelPress);
-                el.addEventListener('touchcancel', cancelPress);
-                el.addEventListener('touchmove', cancelPress);
-            });
-        }
-
-        syncAllData();
-        setInterval(syncAllData, 10 * 60 * 1000);
-    </script>
-</body>
-</html>
+                return `<svg viewBox="0 0 24 24"><path d="M3 10h18M5 14h14M3 18h18M6
