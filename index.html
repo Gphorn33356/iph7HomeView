@@ -326,7 +326,7 @@
         }
 
         .f-day { 
-            width: 130px; 
+            width: 85px; 
             color: #e2e8f0; 
             font-weight: 500; 
             white-space: nowrap; 
@@ -467,23 +467,21 @@
             </div>
         </div>
 
-        <!-- 4. 右下：九天天氣預報卡片 -->
-        <div class="glass-card forecast-card">
+<div class="glass-card forecast-card">
             <div class="forecast-title">
                 <span>香港九天天氣預報</span>
-                <span id="updateStatus" style="font-size: 10px; font-weight: normal; color: #86efac;">已同步</span>
+                <span id="updateStatus" style="font-size: 8px; font-weight: normal; color: #86efac;">已同步</span>
             </div>
             <div class="forecast-list" id="forecastList">
-                <div class="forecast-row"><span class="f-day">--月--日 (週--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
-                <div class="forecast-row"><span class="f-day">--月--日 (週--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
-                <div class="forecast-row"><span class="f-day">--月--日 (週--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
-                <div class="forecast-row"><span class="f-day">--月--日 (週--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
-                <div class="forecast-row"><span class="f-day">--月--日 (週--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
+                <div class="forecast-row"><span class="f-day">--月--日 (--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
+                <div class="forecast-row"><span class="f-day">--月--日 (--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
+                <div class="forecast-row"><span class="f-day">--月--日 (--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
+                <div class="forecast-row"><span class="f-day">--月--日 (--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
+                <div class="forecast-row"><span class="f-day">--月--日 (--)</span><span class="f-cond">--</span><span class="f-temp">--° / --°</span></div>
             </div>
         </div>
     </div>
-
-    <script>
+<script>
         let globalWeatherData = null;
         let globalForecastData = null;
         let hkHolidays = {};
@@ -660,9 +658,10 @@
                     forecast.weatherForecast.forEach((day) => {
                         let m = parseInt(day.forecastDate.substring(4, 6), 10);
                         let d = parseInt(day.forecastDate.substring(6, 8), 10);
+                        let shortWeek = day.week ? day.week.replace('星期', '') : '';
                         forecastHtml += `
                             <div class="forecast-row">
-                                <span class="f-day">${m}月${d}日 (${day.week})</span>
+                                <span class="f-day">${m}月${d}日 (${shortWeek})</span>
                                 <span class="f-cond" title="${day.forecastWeather}">${day.forecastWeather.trim()}</span>
                                 <span class="f-temp">${day.forecastMaxtemp.value}° / ${day.forecastMintemp.value}°</span>
                             </div>
@@ -674,10 +673,10 @@
             } catch (error) {
                 console.error('API 讀取受阻（跨域或無網絡）:', error);
                 document.getElementById('updateStatus').innerText = "實時模式";
-                document.getElementById('currentTemp').innerText = "24°C";
-                document.getElementById('todayHighLow').innerText = "高 27° / 低 22°";
-                document.getElementById('currentGeneral').innerText = "大致多雲";
-                document.getElementById('currentDetails').innerText = "相對濕度：84%";
+                document.getElementById('currentTemp').innerText = "--°C";
+                document.getElementById('todayHighLow').innerText = "高 --° / 低 --°";
+                document.getElementById('currentGeneral').innerText = "--";
+                document.getElementById('currentDetails').innerText = "相對濕度：--%";
             }
         }
 
